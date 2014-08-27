@@ -6,11 +6,11 @@ import os, csv, glob
 mask_img = "../addblock/001_comp-simp/mask.img"
 atlas_img = "/mnt/mapricot/musk2/local/fsl/data/atlases/MNI/MNI-maxprob-thr0-2mm.nii.gz"
 
-def makeROIsFromSeeds(radius=2):
+def makeROIsFromSeeds(roi_file, output_dir = "ROIs"):
 	"""take a list of seeds and draw spheres of a given size in MNI 2mm space
 	"""
 
-	roi_file = "../arithmetic-growth-curve/ROIs.csv"
+	"""
 	rows = csv.reader(open(roi_file, 'r'))
 	rows.next()
 
@@ -22,13 +22,13 @@ def makeROIsFromSeeds(radius=2):
 		side = row[0]
 		cortex = row[1]
 		structure = row[2]
-		name = "ROIs/%i_%s_%s_%s" % (count, side[0], cortex, structure)
-		#command = ['fslmaths', atlas_img, '-mul', '0', '-add', '1', '-roi', row[8], '1', row[9], '1', row[10], '1', '0', '1', name, '-odt', 'float']
+		name = "%s/%i_%s_%s_%s" % (output_dir, count, side[0], cortex, structure)
+		command = ['fslmaths', atlas_img, '-mul', '0', '-add', '1', '-roi', row[8], '1', row[9], '1', row[10], '1', '0', '1', name, '-odt', 'float']
 		#print command
-		#call(command)
-		command = ['fslmaths', name, '-kernel', 'sphere', '5', '-fmean', "%s" % name, '-odt', 'float']
-		#call(command)
-		command = ['fslmaths', name, '-mul', '80.1', name, '-odt', 'float']
+		call(command)
+		command = ['fslmaths', name, '-kernel', 'sphere', '%s' % (int(row[11])/2), '-fmean', "%s" % name, '-odt', 'float']
+		call(command)
+		#command = ['fslmaths', name, '-mul', '80.1', name, '-odt', 'float']
 		#call(command)
 		print command
 
@@ -42,7 +42,6 @@ def makeROIsFromSeeds(radius=2):
 		command = ['overlay', '0', '1', standard, '3000', '8000', name, '0.01', '0.012', '%s_overlay' % name]
 		call(command)
 
-		#command = ['slicer', '/mnt/mapricot/musk2/local/fsl/data/standard/avg152T1_brain.nii.gz', name, '-L', '-x', str(x), '%s_x.ppm' % name]
 		command = ['slicer', '%s_overlay' % name, '-L', '-x', str(x), '%s_x.ppm' % name]
 		call(command)
 		command = ['slicer', '%s_overlay' % name, '-L', '-y', str(y), '%s_y.ppm' % name]
@@ -52,17 +51,24 @@ def makeROIsFromSeeds(radius=2):
 
 		count += 1
 
+	"""
+
 	#now sum up all the images so we can look for collisions
-	images = glob.glob('ROIs/*.nii.gz')
+	images = []
+	for item in glob.glob('%s/*.nii.gz' % output_dir):
+		if item.count("overlay"):
+			pass
+		else:
+			images.append(item)
+
 	start_img = images.pop()
 
 	for img in images:
-		command = ['fslmaths', start_img, '-add', img, 'summed_ROIs']
-		start_img = 'summed_ROIs'
-		#call(command)
+		command = ['fslmaths', start_img, '-add', img, '%s/summed_ROIs' % output_dir]
+		start_img = '%s/summed_ROIs' % output_dir
+		call(command)
 
-	
-	
+makeROIsFromSeeds("../arithmetic-growth-curve/AandT_ROIs.csv", "ROIs/AT")
 
 
 def makeROIs():
@@ -251,9 +257,6 @@ process_LME_output("../subblock_comp/find-rest")
 
 #process_LME_output("../subblock_indiv/fsiq-comp-simp")
 #process_LME_output("../subblock_indiv/fsiq-math-rest")
-
-makeROIsFromSeeds()
-
 
 #process_LME_output("../addblock/con_0003")
 #process_LME_output("../subblock/PPI_right_AI")
