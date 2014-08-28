@@ -3,6 +3,20 @@
 from subprocess import call
 import glob
 
+def time_to_index(t, TR):
+	"""
+	t - time in seconds
+	TR - TR duration
+	"""
+	index = int(t) / 2
+
+	if t % 2 == 0:
+		index -= 1
+	
+	return index
+	
+
+
 def merge(imgs, name):
 	"""
 	imgs - list of images in the order you want them merged in

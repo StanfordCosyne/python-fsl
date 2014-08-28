@@ -21,6 +21,13 @@ class ConcatenateTest(unittest.TestCase):
 
 		#os.remove('test_merged.nii.gz')
 
+	def test_time_to_index(self):
+		i1 = concat.time_to_index(5, 2)
+		i2 = concat.time_to_index(20.5, 2)
+
+		self.assertTrue(i1 == 2)
+		self.assertTrue(i2 == 10)
+
 
 	def test_split(self):
 		images = concat.split(self.img)
