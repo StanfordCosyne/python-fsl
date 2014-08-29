@@ -12,7 +12,7 @@ import concatenate as concat
 
 class ConcatenateTest(unittest.TestCase):
 	def setUp(self):
-		self.img = 'filtered_func_data'
+		self.img = os.path.join(os.getcwd(), 'filtered_func_data')
 
 	def tearDown(self):
 		files = glob.glob("*split*") + glob.glob("*chunk*")
@@ -36,11 +36,11 @@ class ConcatenateTest(unittest.TestCase):
 	def test_merge(self):
 		images = concat.split(self.img)
 		image = concat.merge(images, 'test_merged')
-		self.assertTrue(image == 'test_merged')
+		self.assertTrue(image == os.path.join(os.getcwd(), 'test_merged'))
 
 	def test_concatenate_filename(self):
 		merged_img = concat.concatenate(self.img, [[2, 12], [15, 25], [36, 56]]) 
-		self.assertTrue(merged_img == 'filtered_func_data_merged')
+		self.assertTrue(merged_img == os.path.join(os.getcwd(), 'filtered_func_data_merged'))
 
 	def test_concatenate_voxels(self):
 		merged_img = concat.concatenate(self.img, [[10, 50], [55, 75], [100, 105]])

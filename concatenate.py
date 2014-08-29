@@ -2,6 +2,7 @@
 
 from subprocess import call
 import glob
+import os
 
 def time_to_index(t, TR):
 	"""
@@ -22,11 +23,12 @@ def merge(imgs, name):
 	imgs - list of images in the order you want them merged in
 	name - output (merged) image name
 	"""
+	
 	#file_list = " ".join(imgs)
 	command = ['fslmerge', '-t', name] + imgs
 	call(command)
 
-	return "%s" % name
+	return os.path.join(os.getcwd(), name)
 
 
 def split(img):
@@ -34,10 +36,14 @@ def split(img):
 	img - image to split
 	"""
 
-	command = ['fslsplit', img, "split_%s" % img, '-t'] 
+	dirname = os.path.dirname(img)
+	basename = os.path.basename(img)	
+
+
+	command = ['fslsplit', img, "%s/split_%s" % (dirname, basename), '-t'] 
 	call(command)
 	
-	files = glob.glob("*split_%s*" % img)
+	files = glob.glob("%s/*split_%s*" % (dirname, basename))
 	
 	return files
 
