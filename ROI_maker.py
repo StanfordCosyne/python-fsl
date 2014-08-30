@@ -10,7 +10,6 @@ def makeROIsFromSeeds(roi_file, output_dir = "ROIs"):
 	"""take a list of seeds and draw spheres of a given size in MNI 2mm space
 	"""
 
-	"""
 	rows = csv.reader(open(roi_file, 'r'))
 	rows.next()
 
@@ -37,7 +36,6 @@ def makeROIsFromSeeds(roi_file, output_dir = "ROIs"):
 		y = int(row[9]) / 109.
 		z = int(row[10]) / 91.
 		standard = '/mnt/mapricot/musk2/local/fsl/data/standard/avg152T1_brain.nii.gz'
-		lut = '/mnt/mapricot/musk2/local/fsl/etc/render3.lut'
 
 		command = ['overlay', '0', '1', standard, '3000', '8000', name, '0.01', '0.012', '%s_overlay' % name]
 		call(command)
@@ -50,8 +48,6 @@ def makeROIsFromSeeds(roi_file, output_dir = "ROIs"):
 		call(command)
 
 		count += 1
-
-	"""
 
 	#now sum up all the images so we can look for collisions
 	images = []

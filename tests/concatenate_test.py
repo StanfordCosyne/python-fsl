@@ -15,11 +15,9 @@ class ConcatenateTest(unittest.TestCase):
 		self.img = 'filtered_func_data'
 
 	def tearDown(self):
-		files = glob.glob("*split*") + glob.glob("*chunk*")
+		files = glob.glob("*split*") + glob.glob("*chunk*") + glob.glob("*merged*")
 		for f in files:
 			os.remove(f)
-
-		#os.remove('test_merged.nii.gz')
 
 	def test_time_to_index(self):
 		i1 = concat.time_to_index(5, 2)
@@ -27,7 +25,6 @@ class ConcatenateTest(unittest.TestCase):
 
 		self.assertTrue(i1 == 2)
 		self.assertTrue(i2 == 10)
-
 
 	def test_split(self):
 		images = concat.split(self.img)
@@ -66,8 +63,6 @@ class ConcatenateTest(unittest.TestCase):
 
 		self.assertTrue(t1==12227)
 		self.assertTrue(t2==12420)
-
-
 	
 if __name__ == '__main__':
     unittest.main()
