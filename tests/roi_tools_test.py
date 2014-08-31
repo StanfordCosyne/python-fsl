@@ -10,6 +10,8 @@ from roi_tools import *
 class ROIToolsTest(unittest.TestCase):
 	def setUp(self):
 		self.roi_file = 'ROIs.csv'
+		self.ROIs = ['1.nii.gz', '2.nii.gz']
+		self.func_img = os.path.join(os.getcwd(), 'filtered_func_data')
 		self.cleanup = []	
 
 	def tearDown(self):
@@ -27,6 +29,10 @@ class ROIToolsTest(unittest.TestCase):
 		self.assertTrue(roi_img == os.path.join(os.getcwd(), 'test_combined.nii.gz'))
 		self.cleanup.append(roi_img)
 
+	def extract_roi_values(self):
+		values = extract_roi_values(self.func_img, roi)
+		
+		
 
 if __name__ == '__main__':
     unittest.main()

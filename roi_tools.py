@@ -3,6 +3,38 @@ import numpy as np
 from subprocess import call
 import os, csv, glob
 
+def extract_from_rois(func_img, ROIs, convert=False):
+	"""func_img - functional image (nifti)
+	rois - list of rois to extract from
+	"""
+		#make a temporary nifti file
+
+	if convert:
+		command = ['fslchfiletype', 'NIFTI', func_img, 'nifti']
+		subprocess.call(command)
+		func_img = 'nifti'
+
+	for roi in ROIs:
+		#temp file name
+		#extract the masked voxels into a temporary file
+		tempfile = '%s_tempfile' % roi
+		command = ['fslmaths', 'nifti', '-mas', roi, tempfile]
+		subprocess.call(command)
+		#extract the dang ol' ROI value
+		command = ['fslstats', tempfile, '-n', '-M']
+		output = Popen(command, stdout=PIPE).communicate()[0]
+
+		try:
+			beta = float(output)
+		except:
+			print "no beta value for %s" % tempfile
+			beta = None
+
+		#remove the temp roi
+		command = ['rm', '%s.nii.gz' % tempfile, '-r']
+		subprocess.call(command)
+
+	return beta
 
 def single_from_seeds(roi_file, output_dir = "ROIs"):
 	"""take a list of seeds and draw spheres of a given size in MNI 2mm space
