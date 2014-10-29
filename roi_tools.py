@@ -3,6 +3,52 @@ import numpy as np
 from subprocess import call, Popen, PIPE
 import os, csv, glob
 
+def label_seed(x, y, z):
+	"""given a seed in MNI space, assign a label
+	"""
+	d = {'hemisphere':'', 'lobe':'', 'structure':'', 'BA':''}
+
+	if x < 0:
+		d['hemisphere'] = 'Left'
+	else:
+		d['hemisphere'] = 'Right'
+
+	command = ['atlasquery', '-a', 'Talairach Daemon Labels', '-c', '%s,%s,%s' % (x, y, z)]
+
+	tal = Popen(command, stdout=PIPE).communicate()[0]
+	tal = tal.split('<br>')[-1].split('.')
+	d['lobe'] = tal[1]
+	d['structure'] = tal[2]
+	d['BA'] = tal[4].split(' ')[-1].strip()
+
+	print d
+
+	return d
+
+
+def extract_timeseries_from_roi(func_img, roi, name, convert=False):
+	"""func_img - functional image (nifti)
+	roi - roi to extract timeseries from
+	name - name of the output file
+	convert = bool indicating whether func_img needs to be converted to nifti
+	"""
+
+	name = "%s.txt" % name
+
+	#make a temporary nifti file
+	if convert:
+		command = ['fslchfiletype', 'NIFTI', func_img, 'nifti']
+		call(command)
+		func_img = 'nifti'
+
+	command = ['fslmeants', '-i', func_img, '-o', name, '-m', roi]	
+	call(command)
+
+	if os.path.exists(name):
+		return os.path.join(os.getcwd(), name)
+	else:
+		return False
+
 def extract_from_roi(func_img, roi, convert=False):
 	"""func_img - functional image (nifti)
 	rois - list of rois to extract from
@@ -29,7 +75,6 @@ def extract_from_roi(func_img, roi, convert=False):
 		print "no beta value for %s" % tempfile
 		beta = "NA"
 
-	print beta
 	#remove the temp roi
 	command = ['rm', '%s.nii.gz' % tempfile, '-r']
 	call(command)
