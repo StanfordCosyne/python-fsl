@@ -64,9 +64,6 @@ def makeROIsFromSeeds(roi_file, output_dir = "ROIs"):
 		start_img = '%s/summed_ROIs' % output_dir
 		call(command)
 
-makeROIsFromSeeds("../arithmetic-growth-curve/AandT_ROIs.csv", "ROIs/AT")
-
-
 def makeROIs():
 	"""take a mask image from group stats and bust it up into its component parts from an atlas
 	"""
@@ -112,9 +109,9 @@ def makeROIs():
 def text_to_nii(model, value, ROIs, directory="."):
 	files=[]
 	for roi in ROIs:
-		txt_file = "%s_%s_subcomp_ROI_%s_img.txt" % (model, value, roi)
+		txt_file = "%s_%s_%s_img.txt" % (model, value, roi)
 		#txt_file = "%s_%s_MNI_2mm_ROI_%s_img.txt" % (model, value, roi)
-		nii_file = "%s_%s_MNI_2mm_ROI_%s_img" % (model, value, roi)
+		nii_file = "%s_%s_%s_img" % (model, value, roi)
 		command = ['fslascii2img', os.path.join(directory, txt_file), "91", "109", "91", "1", "2", "2", "2", "2", os.path.join(directory, nii_file)]
 		call(command)
 
@@ -122,42 +119,48 @@ def split_text(model, ROIs, directory):
 	for roi in ROIs:
 		inters = []
 		slopes = []
+		inter2s = []
 		slope2s = []
 
 		#txt_file = "%s_terms_MNI_2mm_ROI_%s_img.txt" % (model, roi)
-		txt_file = "%s_terms_subcomp_ROI_%s_img.txt" % (model, roi)
+		txt_file = "%s_terms_%s_img.txt" % (model, roi)
 		path = os.path.join(directory, txt_file)
 		for row in open(path, 'r').readlines():
 			row = row.strip()
 			row = row.strip("\"")
 			inter = 0
 			slope = 0
+			inter2 = 0
 			slope2 = 0
 
 			if row != "0":
 				frags = row.split(",")
 				inter = float(frags[0])
 				slope = float(frags[1])
-				if len(frags) == 3:
-					slope2 = float(frags[2])
+				if len(frags) == 4:
+					inter2 = float(frags[2])
+					slope2 = float(frags[3])
 
 			inters.append(inter)
+			inter2s.append(inter2)
 			slopes.append(slope)
 			slope2s.append(slope2)
 
 		inters = np.array(inters)
+		inter2s = np.array(inter2s)
 		slope = np.array(slopes)
 		slope2 = np.array(slope2s)
 
-		np.savetxt("%s/%s_inters_subcomp_ROI_%s_img.txt" % (directory, model, roi), inters)
-		np.savetxt("%s/%s_slope_subcomp_ROI_%s_img.txt" % (directory, model, roi), slope)
-		np.savetxt("%s/%s_slope2_subcomp_ROI_%s_img.txt" % (directory, model, roi), slope2)
+		np.savetxt("%s/%s_inters_%s_img.txt" % (directory, model, roi), inters)
+		np.savetxt("%s/%s_inter2s_%s_img.txt" % (directory, model, roi), inter2s)
+		np.savetxt("%s/%s_slope_%s_img.txt" % (directory, model, roi), slope)
+		np.savetxt("%s/%s_slope2_%s_img.txt" % (directory, model, roi), slope2)
 
 
 def combineROIs(model, value, ROIs, directory="."):
 	files=[]
 	for roi in ROIs:
-		fileName = "%s_%s_MNI_2mm_ROI_%s_img.nii.gz" % (model, value, roi)
+		fileName = "%s_%s_%s_img.nii.gz" % (model, value, roi)
 
 		files.append("%s/%s" % (directory, fileName))
 
@@ -175,8 +178,10 @@ def combineROIs(model, value, ROIs, directory="."):
 	d ={}
 	d['tval'] = -1
 	d['pval'] = -1
+	d['anova_pval'] = -1
 	d['slope'] = 0
 	d['inters'] = 0
+	d['inter2s'] = 0
 	d['slope2'] = 0
 
 	for roi_file in files:
@@ -217,17 +222,19 @@ def process_LME_output(path):
 	combineROIs(model, "inters", ROIs, path)	
 	combineROIs(model, "slope", ROIs, path)
 
-	model = "indiv"
+	model = "num_ops"
 
 	split_text(model, ROIs, path)
 
 	text_to_nii(model, "tval", ROIs, path)
 	text_to_nii(model, "pval", ROIs, path)
 	text_to_nii(model, "inters", ROIs, path)
+	text_to_nii(model, "inter2s", ROIs, path)
 	text_to_nii(model, "slope", ROIs, path)
 	text_to_nii(model, "slope2", ROIs, path)
 
 	combineROIs(model, "inters", ROIs, path)
+	combineROIs(model, "inter2s", ROIs, path)
 	combineROIs(model, "slope", ROIs, path)	
 	combineROIs(model, "slope2", ROIs, path)
 	combineROIs(model, "tval", ROIs, path)
@@ -235,21 +242,10 @@ def process_LME_output(path):
 
 
 #makeROIs()
-"""
-process_LME_output("../addblock_comp/comp-simp")
-process_LME_output("../addblock_comp/comp-rest")
-process_LME_output("../addblock_comp/simp-rest")
-process_LME_output("../addblock_comp/comp-find")
-process_LME_output("../addblock_comp/simp-find")
-process_LME_output("../addblock_comp/math-rest")
-process_LME_output("../addblock_comp/find-rest")
-
-process_LME_output("../subblock_comp/comp-rest")
-process_LME_output("../subblock_comp/simp-rest")
-process_LME_output("../subblock_comp/comp-find")
-process_LME_output("../subblock_comp/simp-find")
-process_LME_output("../subblock_comp/find-rest")
-"""
+process_LME_output("../addblock_gppi/find-rest")
+#process_LME_output("../addblock_comp/comp-simp")
+#process_LME_output("../addblock_comp/comp-rest")
+#process_LME_output("../addblock_comp/simp-rest")
 
 #process_LME_output("../subblock_indiv/fsiq-comp-simp")
 #process_LME_output("../subblock_indiv/fsiq-math-rest")

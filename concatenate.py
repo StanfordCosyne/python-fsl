@@ -48,7 +48,7 @@ def split(img):
 	return files
 
 
-def concatenate(img, timepoints):
+def concatenate(img, timepoints, pad=0):
 	"""
 	img - image to split
 	timepoints - list of [start, end] indexes to split at - eg. [start:end]
@@ -64,6 +64,9 @@ def concatenate(img, timepoints):
 	for timepoint in timepoints:
 		start = timepoint[0]
 		end = timepoint[1]
+		if pad:
+			start +=1
+			end -= 1
 		chunk = imgs[start:end]
 		name = "%s_chunk_%i" % (img, c)
 		merge(chunk, name)
