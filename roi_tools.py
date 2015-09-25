@@ -58,7 +58,7 @@ def extract_from_roi(func_img, roi, convert=False):
 	#make a temporary nifti file
 	if convert:
 		command = ['fslchfiletype', 'NIFTI', func_img, 'nifti']
-		subprocess.call(command)
+		call(command)
 		func_img = 'nifti'
 
 	#temp file name
